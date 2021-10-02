@@ -14,19 +14,8 @@ class Book{
        
 
         static displayBooks() {
-            const StoredBooks = [
-                {
-                    title: "book one",
-                    author: "author1",
-                    pages: "69"
-                },
-                {
-                    title: "book two",
-                    author: "author2",
-                    pages: "420"
-                }
-            ];
-            const books = StoredBooks;
+         
+            const books = Store.getBooks();
 
             books.forEach((book) => UI.addBookToList(book));
 
@@ -70,6 +59,9 @@ class Book{
 
 
        */
+
+       // Shows Alers Dynamically
+
        static showAlert(message, className) {
             const div = document.createElement("div");
          div.className = `alert alert-${className}`
@@ -84,12 +76,16 @@ class Book{
          
        }
 
+       // Clears The Fields
+
 
         static clearFields() {
             document.querySelector("#title").value="";
             document.querySelector("#author").value="";
             document.querySelector("#pages").value="";
         }
+
+        // Deletes a Book
 
         static deleteBook(el){
             if(el.classList.contains('delete')) {
@@ -99,7 +95,40 @@ class Book{
     }
 
 //Storing Class : Self-Explanatory
+class Store{
+    static getBooks() {
+        let books;
 
+        if(localStorage.getItem("books") === null){
+            books = []
+        }
+        else {
+            books = JSON.parse(localStorage.getItem("books"));
+        }
+
+        return books;
+    }
+    static addBook(book){
+        const books = Store.getBooks();
+
+        books.push(book);
+
+        localStorage.setItem('books', JSON.stringify(books));
+    }
+
+    static removeBook(title){
+        const books = Store.getBooks();
+
+        books.forEach((book, index) => {
+            if(book.title === title) {
+                books.splice(index, 1);
+            }
+        })
+
+        localStorage.setItem("books", JSON.stringify(books));
+    }
+
+}
 
 
 //Event : Displays Books
@@ -128,6 +157,12 @@ document.querySelector("#book-form").addEventListener("submit" , (e) =>{
          // Adds the Books to the UI
             UI.addBookToList(book);
 
+        // Adds a Book to the Local Storage
+        Store.addBook(book);
+
+        // Success Message
+        UI.showAlert("Book Added", "success");
+
            // Clears the Field
                UI.clearFields();}
 
@@ -138,5 +173,13 @@ document.querySelector("#book-form").addEventListener("submit" , (e) =>{
 //Event : Removes a Book
 
 document.querySelector("#book-list").addEventListener("click", (e) =>{
+    
+    // Deletes Book from the UI
     UI.deleteBook(e.target);
+    
+    // Removes Book from Local Storage
+    Store.removeBook(e.target.parentElement.previousElementSibling.previousElementSibling.previousElementSibling.textContent);
+    
+    // Brings up an Alert
+    UI.showAlert("Book Removed", "info");
 })
